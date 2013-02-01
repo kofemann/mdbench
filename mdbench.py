@@ -15,8 +15,10 @@ Simple filsystem metadata operations benchmark
 
 '''
 
+import sys
 import os
 import socket
+import getopt
 from datetime import datetime
 
 DIR = 'dir.'
@@ -29,11 +31,10 @@ def make_dirs(root, count):
 	for i in range(count):
 		os.mkdir( gen_dir(root, i) )
 
-def make_files(root, dir_count, file_count):
+def make_files(root, dir_count, file_count, size = 0):
 	for i in range(dir_count):
 		for j in range(file_count):
-			f = open(gen_file( gen_dir(root, i), j ), 'w')
-			f.close()
+			mkfile(gen_file( gen_dir(root, i), j ), 1024, size)
 
 def del_files(root, dir_count, file_count):
 	for i in range(dir_count):
@@ -53,6 +54,20 @@ def stat_files(root, dir_count, file_count):
 		for j in range(file_count):
 			os.stat(gen_file( gen_dir(root, i), j ))
 
+def mkfile(fname, size = 0, chunk = 1024, sync = False) :
+	n_chunks = size // chunk
+
+	bite = bytearray(chunk)
+	payload = bytearray(size % chunk)
+
+	with open(fname, "wb") as f:
+		for n in range(n_chunks) :
+			f.write(bite)
+ 
+		f.write(payload)
+		if sync:
+			f.flush()
+			os.fsync(f.fileno())
 
 def bench_run(func, *args):
 	start = datetime.now()
@@ -69,6 +84,17 @@ if __name__ == '__main__':
 	
 	dir_count = 1000
 	file_count = 10
+	file_size = 0
+
+	options, remainder = getopt.gnu_getopt(sys.argv[1:], 'f:d:s:')
+	for opt, arg in options:
+		if opt in ('-f'):
+			file_count = int(arg)
+		elif opt in ('-d'):
+			dir_count = int(arg)
+		elif opt in ('-s'):
+			file_size = long(arg)
+
 	root = 'mdbench.%s.%d' % (socket.gethostname(), os.getpid())
 
 	os.mkdir(root)
@@ -76,7 +102,7 @@ if __name__ == '__main__':
 	in_sec = elapsed.total_seconds()
 	print '%.2f dir creates per second' % (dir_count/in_sec)
 
-	elapsed, result = bench_run( make_files, root, dir_count, file_count )
+	elapsed, result = bench_run( make_files, root, dir_count, file_count , file_size)
 	in_sec = elapsed.total_seconds()
 	print '%.2f files creates per second' % ((dir_count*file_count)/in_sec)
 
