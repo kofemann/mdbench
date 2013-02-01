@@ -1,4 +1,19 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+#
+# Copyright (C) 2013 Deutsches Elektronen-Synchroton,
+# Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
+#
+# This software may be used and distributed according to the terms of the
+# GNU General Public License version 2 or any later version.
+#
+
+'''mdbench
+
+Simple filsystem metadata operations benchmark
+
+'''
 
 import os
 import socket
