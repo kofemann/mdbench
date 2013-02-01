@@ -91,3 +91,5 @@ if __name__ == '__main__':
 	elapsed, result = bench_run( del_dirs, root, dir_count )
 	in_sec = elapsed.total_seconds()
 	print '%.2f dir removes per second' % (dir_count/in_sec)
+
+	os.rmdir(root)
