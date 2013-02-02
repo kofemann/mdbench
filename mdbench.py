@@ -9,16 +9,25 @@
 # GNU General Public License version 2 or any later version.
 #
 
-'''mdbench
-
+'''
 Simple filsystem metadata operations benchmark
 
+Usage: mdbench [options]
+
+  where options are:
+    -f, --files <N> : number of generated files per directory
+    -d, --dirs  <N> : number of generated directories to generate
+    -s, --size  <N> : size of generated files in B/K/M/G
+    -h, --help      : helpl message
+
+The file size can be specified in human friendly format, e.g.: 1K, 256M. 4G.
 '''
 
 import sys
 import os
 import socket
 import getopt
+import string
 from datetime import datetime
 
 DIR = 'dir.'
@@ -26,6 +35,24 @@ FILE = 'file.'
 
 gen_dir = lambda base, gen : '%s/%s%d' % (base, DIR, gen)
 gen_file = lambda base, gen : '%s/%s%d' % (base, FILE, gen)
+
+B = 1
+K = 1024
+M = K*K
+G = K*M
+
+DATA_SIZES = {'b':B, 'k': K, 'm': M, 'g': G}
+
+def get_size(s):
+
+	last_symbol = s[-1:].lower()
+	if last_symbol in string.digits:
+		return long(size)
+
+	if not DATA_SIZES.has_key(last_symbol):
+		raise Exception('Invalid format: %s' % s)
+
+	return long(s[:-1])*DATA_SIZES[last_symbol]
 
 def make_dirs(root, count):
 	for i in range(count):
@@ -79,21 +106,37 @@ def bench_run(func, *args):
 
 	return elapsed, result
 
+DIR_COUNT = 1000
+FILE_COUNT = 10
+FILE_SIZE = 0
 
-if __name__ == '__main__':
+def usage():
+	print __doc__
+
+def main():
 	
-	dir_count = 1000
-	file_count = 10
-	file_size = 0
+	dir_count = DIR_COUNT
+	file_count = FILE_COUNT
+	file_size = FILE_SIZE
 
-	options, remainder = getopt.gnu_getopt(sys.argv[1:], 'f:d:s:')
+	try:
+		options, remainder = getopt.gnu_getopt(sys.argv[1:], 'f:d:s:h', \
+					 ['files=','dirs=','size=','help'])
+	except getopt.GetoptError as err:
+		print str(err)
+		usage()
+		sys.exit(2)
+
 	for opt, arg in options:
-		if opt in ('-f'):
+		if opt in ('-f', '--files'):
 			file_count = int(arg)
-		elif opt in ('-d'):
+		elif opt in ('-d', '--dirs'):
 			dir_count = int(arg)
-		elif opt in ('-s'):
-			file_size = long(arg)
+		elif opt in ('-s', '--size'):
+			file_size = get_size(arg)
+		elif opt in ('-h', '--help'):
+			usage()
+			sys.exit(0)
 
 	root = 'mdbench.%s.%d' % (socket.gethostname(), os.getpid())
 
@@ -119,3 +162,6 @@ if __name__ == '__main__':
 	print '%.2f dir removes per second' % (dir_count/in_sec)
 
 	os.rmdir(root)
+
+if __name__ == '__main__':
+	main()
