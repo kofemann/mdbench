@@ -34,7 +34,7 @@ def make_dirs(root, count):
 def make_files(root, dir_count, file_count, size = 0):
 	for i in range(dir_count):
 		for j in range(file_count):
-			mkfile(gen_file( gen_dir(root, i), j ), 1024, size)
+			mkfile(gen_file( gen_dir(root, i), j ), size, 1024)
 
 def del_files(root, dir_count, file_count):
 	for i in range(dir_count):
