@@ -49,7 +49,7 @@ def get_size(s):
 
 	last_symbol = s[-1:].lower()
 	if last_symbol in string.digits:
-		return long(size)
+		return long(s)
 
 	if not DATA_SIZES.has_key(last_symbol):
 		raise Exception('Invalid format: %s' % s)
