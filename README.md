@@ -11,7 +11,7 @@ Usage: mdbench [options]
     -d, --dirs  <N>  : number of generated directories to generate
     -s, --size  <N>  : size of generated files in B/K/M/G
     -p, --path <dir> : directory where the test should run
-    -h, --help       : helpl message
+    -h, --help       : help message
 
 The file size can be specified in human friendly format, e.g.: 1K, 256M. 4G.
 
