@@ -23,6 +23,7 @@ Usage: mdbench [options]
 The file size can be specified in human friendly format, e.g.: 1K, 256M. 4G.
 '''
 
+from __future__ import division
 import sys
 import os
 import socket
@@ -96,6 +97,9 @@ def mkfile(fname, size = 0, chunk = 1024, sync = False) :
 			f.flush()
 			os.fsync(f.fileno())
 
+def total_seconds(td):
+	return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6) / 10**6
+
 def bench_run(func, *args):
 	start = datetime.now()
 
@@ -142,23 +146,23 @@ def main():
 
 	os.mkdir(root)
 	elapsed, result = bench_run( make_dirs, root, dir_count )
-	in_sec = elapsed.total_seconds()
+	in_sec = total_seconds(elapsed)
 	print '%.2f dir creates per second' % (dir_count/in_sec)
 
 	elapsed, result = bench_run( make_files, root, dir_count, file_count , file_size)
-	in_sec = elapsed.total_seconds()
+	in_sec = total_seconds(elapsed)
 	print '%.2f files creates per second' % ((dir_count*file_count)/in_sec)
 
 	elapsed, result = bench_run( stat_files, root, dir_count, file_count )
-	in_sec = elapsed.total_seconds()
+	in_sec = total_seconds(elapsed)
 	print '%.2f files stats per second' % ((dir_count*file_count)/in_sec)
 
 	elapsed, result = bench_run( del_files, root, dir_count, file_count )
-	in_sec = elapsed.total_seconds()
+	in_sec = total_seconds(elapsed)
 	print '%.2f files removes per second' % ((dir_count*file_count)/in_sec)
 
 	elapsed, result = bench_run( del_dirs, root, dir_count )
-	in_sec = elapsed.total_seconds()
+	in_sec = total_seconds(elapsed)
 	print '%.2f dir removes per second' % (dir_count/in_sec)
 
 	os.rmdir(root)
