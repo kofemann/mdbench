@@ -14,7 +14,7 @@ Usage: mdbench [options]
 
 The file size can be specified in human friendly format, e.g.: 1K, 256M. 4G.
 
-'''sh
+```sh
 $ ./mdbench.py -d 10 -p /mnt/exports/data/
 46236.36 dir creates per second
 12963.49 files creates per second
@@ -22,4 +22,4 @@ $ ./mdbench.py -d 10 -p /mnt/exports/data/
 33829.84 files removes per second
 46262.03 dir removes per second
 $
-'''
+```
