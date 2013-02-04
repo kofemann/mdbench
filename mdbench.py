@@ -15,10 +15,11 @@ Simple filsystem metadata operations benchmark
 Usage: mdbench [options]
 
   where options are:
-    -f, --files <N> : number of generated files per directory
-    -d, --dirs  <N> : number of generated directories to generate
-    -s, --size  <N> : size of generated files in B/K/M/G
-    -h, --help      : helpl message
+    -f, --files <N>  : number of generated files per directory
+    -d, --dirs  <N>  : number of generated directories to generate
+    -s, --size  <N>  : size of generated files in B/K/M/G
+    -p, --path <dir> : directory where the test should run
+    -h, --help       : helpl message
 
 The file size can be specified in human friendly format, e.g.: 1K, 256M. 4G.
 '''
@@ -122,10 +123,11 @@ def main():
 	dir_count = DIR_COUNT
 	file_count = FILE_COUNT
 	file_size = FILE_SIZE
+	path = '.'
 
 	try:
-		options, remainder = getopt.gnu_getopt(sys.argv[1:], 'f:d:s:h', \
-					 ['files=','dirs=','size=','help'])
+		options, remainder = getopt.gnu_getopt(sys.argv[1:], 'f:d:s:p:h', \
+					 ['files=','dirs=','size=','path','help'])
 	except getopt.GetoptError as err:
 		print str(err)
 		usage()
@@ -138,11 +140,13 @@ def main():
 			dir_count = int(arg)
 		elif opt in ('-s', '--size'):
 			file_size = get_size(arg)
+		elif opt in ('-p', '--path'):
+			path = arg
 		elif opt in ('-h', '--help'):
 			usage()
 			sys.exit(0)
 
-	root = 'mdbench.%s.%d' % (socket.gethostname(), os.getpid())
+	root = '%s/mdbench.%s.%d' % (path, socket.gethostname(), os.getpid())
 
 	os.mkdir(root)
 	elapsed, result = bench_run( make_dirs, root, dir_count )
