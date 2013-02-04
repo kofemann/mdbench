@@ -2,6 +2,7 @@ mdbench
 =======
 
 Simple filsystem metadata operations benchmark
+----------------------------------------------
 
 Usage: mdbench [options]
 
@@ -21,5 +22,5 @@ $ ./mdbench.py -d 10 -p /mnt/exports/data/
 36035.65 files stats per second
 33829.84 files removes per second
 46262.03 dir removes per second
-$
+$ 
 ```
