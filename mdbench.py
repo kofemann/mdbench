@@ -85,7 +85,7 @@ def stat_files(root, dir_count, file_count):
 		for j in range(file_count):
 			os.stat(gen_file( gen_dir(root, i), j ))
 
-def mkfile(fname, size = 0, chunk = 1024, sync = False) :
+def mkfile(fname, size = 0, chunk = 65536, sync = False) :
 	n_chunks = size // chunk
 
 	bite = bytearray(chunk)
