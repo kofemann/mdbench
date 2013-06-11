@@ -12,7 +12,7 @@
 '''
 Simple filsystem metadata operations benchmark
 
-Usage: mdbench [options] [PATH]
+Usage: mdbench [options] <PATH>
 
   where options are:
     -f, --files <N>  : number of generated files per directory
@@ -119,13 +119,13 @@ FILE_SIZE = 0
 
 def usage():
 	print __doc__
+	sys.exit(1)
 
 def main():
 	
 	dir_count = DIR_COUNT
 	file_count = FILE_COUNT
 	file_size = FILE_SIZE
-	path = '.'
 
 	try:
 		options, remainder = getopt.gnu_getopt(sys.argv[1:], 'f:d:s:h', \
@@ -133,7 +133,6 @@ def main():
 	except getopt.GetoptError as err:
 		print str(err)
 		usage()
-		sys.exit(2)
 
 	for opt, arg in options:
 		if opt in ('-f', '--files'):
@@ -144,14 +143,11 @@ def main():
 			file_size = get_size(arg)
 		elif opt in ('-h', '--help'):
 			usage()
-			sys.exit(0)
 
-	if len(remainder) > 1 :
+	if len(remainder) != 1 :
 		usage()
-		sys.exit(3)
 
-	if len(remainder) is 1:
-		path = remainder[0]
+	path = remainder[0]
 
 	root = '%s/mdbench.%s.%d' % (path, socket.gethostname(), os.getpid())
 
