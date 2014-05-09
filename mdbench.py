@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #
-# Copyright (C) 2013 Deutsches Elektronen-Synchroton,
+# Copyright (C) 2013-2014 Deutsches Elektronen-Synchroton,
 # Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
 #
 # This software may be used and distributed according to the terms of the
