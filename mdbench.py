@@ -158,15 +158,15 @@ def main():
 
 	elapsed, result = bench_run( make_files, root, dir_count, file_count , file_size)
 	in_sec = total_seconds(elapsed)
-	print '%.2f files creates per second' % ((dir_count*file_count)/in_sec)
+	print '%.2f file creates per second' % ((dir_count*file_count)/in_sec)
 
 	elapsed, result = bench_run( stat_files, root, dir_count, file_count )
 	in_sec = total_seconds(elapsed)
-	print '%.2f files stats per second' % ((dir_count*file_count)/in_sec)
+	print '%.2f file stats per second' % ((dir_count*file_count)/in_sec)
 
 	elapsed, result = bench_run( del_files, root, dir_count, file_count )
 	in_sec = total_seconds(elapsed)
-	print '%.2f files removes per second' % ((dir_count*file_count)/in_sec)
+	print '%.2f file removes per second' % ((dir_count*file_count)/in_sec)
 
 	elapsed, result = bench_run( del_dirs, root, dir_count )
 	in_sec = total_seconds(elapsed)
