@@ -18,6 +18,7 @@ Usage: mdbench [options] <PATH>
     -f, --files <N>  : number of generated files per directory
     -d, --dirs  <N>  : number of generated directories to generate
     -s, --size  <N>  : size of generated files in B/K/M/G
+    -n, --no-clean   : do not delete created files and directories
     -h, --help       : help message
 
   and PATH points to the directory where tests should run. Current directory
@@ -126,10 +127,11 @@ def main():
 	dir_count = DIR_COUNT
 	file_count = FILE_COUNT
 	file_size = FILE_SIZE
+	cleanup = True
 
 	try:
-		options, remainder = getopt.gnu_getopt(sys.argv[1:], 'f:d:s:h', \
-					 ['files=','dirs=','size=','help'])
+		options, remainder = getopt.gnu_getopt(sys.argv[1:], 'f:d:s:nh', \
+					 ['files=','dirs=','size=','no-clean','help'])
 	except getopt.GetoptError as err:
 		print str(err)
 		usage()
@@ -141,6 +143,8 @@ def main():
 			dir_count = int(arg)
 		elif opt in ('-s', '--size'):
 			file_size = get_size(arg)
+		elif opt in ('-n', '--no-clean'):
+			cleanup = False
 		elif opt in ('-h', '--help'):
 			usage()
 
@@ -164,15 +168,16 @@ def main():
 	in_sec = total_seconds(elapsed)
 	print '%.2f file stats per second' % ((dir_count*file_count)/in_sec)
 
-	elapsed, result = bench_run( del_files, root, dir_count, file_count )
-	in_sec = total_seconds(elapsed)
-	print '%.2f file removes per second' % ((dir_count*file_count)/in_sec)
+	if cleanup:
+		elapsed, result = bench_run( del_files, root, dir_count, file_count )
+		in_sec = total_seconds(elapsed)
+		print '%.2f file removes per second' % ((dir_count*file_count)/in_sec)
 
-	elapsed, result = bench_run( del_dirs, root, dir_count )
-	in_sec = total_seconds(elapsed)
-	print '%.2f dir removes per second' % (dir_count/in_sec)
+		elapsed, result = bench_run( del_dirs, root, dir_count )
+		in_sec = total_seconds(elapsed)
+		print '%.2f dir removes per second' % (dir_count/in_sec)
 
-	os.rmdir(root)
+		os.rmdir(root)
 
 if __name__ == '__main__':
 	main()
