@@ -10,6 +10,7 @@ Usage: mdbench [options] [PATH]
     -f, --files <N>  : number of generated files per directory
     -d, --dirs  <N>  : number of generated directories to generate
     -s, --size  <N>  : size of generated files in B/K/M/G
+    -n, --no-clean   : do not delete created files and directories
     -h, --help       : help message
 
   and PATH points to a directory where the test should run. Currect directory is
