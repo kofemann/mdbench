@@ -25,6 +25,10 @@ Usage: mdbench [options] <PATH>
   and PATH points to the directory where tests should run. Current directory
   is used if not specified.
 
+If number of generated directories is 0 then files are created within
+the container directory ("mdbench.<name>.<pid>") or in PATH if
+--no-container is specified.
+
 The file size can be specified in human friendly format, e.g.: 1K, 256M. 4G.
 '''
 
@@ -65,14 +69,20 @@ def make_dirs(root, count):
 		os.mkdir( gen_dir(root, i) )
 
 def make_files(root, dir_count, file_count, size = 0):
-    for j in range(file_count):
-	    for i in range(dir_count):
-			mkfile(gen_file( gen_dir(root, i), j ), size, 1024)
+	for j in range(file_count):
+		if dir_count > 0:
+			for i in range(dir_count):
+				mkfile(gen_file( gen_dir(root, i), j ), size, 1024)
+		else:
+			mkfile(gen_file(root, j), size, 1024)
 
 def del_files(root, dir_count, file_count):
-	for i in range(dir_count):
-		for j in range(file_count):
-			os.remove(gen_file( gen_dir(root, i), j ))
+	for j in range(file_count):
+		if dir_count > 0:
+			for i in range(dir_count):
+				os.remove(gen_file( gen_dir(root, i), j ))
+		else:
+			os.remove(gen_file(root, j))
 
 def del_dirs(root, count):
 	for i in range(count):
@@ -83,9 +93,13 @@ def stat_dirs(root, count):
 		os.stat( gen_dir(root, i) )
 
 def stat_files(root, dir_count, file_count):
-	for i in range(dir_count):
-		for j in range(file_count):
-			os.stat(gen_file( gen_dir(root, i), j ))
+	for j in range(file_count):
+		if dir_count > 0:
+			for i in range(dir_count):
+				os.stat(gen_file( gen_dir(root, i), j ))
+		else:
+			os.stat(gen_file(root, j))
+
 
 def mkfile(fname, size = 0, chunk = 65536, sync = False) :
 	n_chunks = size // chunk
@@ -168,16 +182,17 @@ def main():
 
 	elapsed, result = bench_run( make_files, root, dir_count, file_count , file_size)
 	in_sec = total_seconds(elapsed)
-	print '%.2f file creates per second' % ((dir_count*file_count)/in_sec)
+	count = (dir_count if dir_count > 0 else 1) * file_count
+	print '%.2f file creates per second' % (count/in_sec)
 
 	elapsed, result = bench_run( stat_files, root, dir_count, file_count )
 	in_sec = total_seconds(elapsed)
-	print '%.2f file stats per second' % ((dir_count*file_count)/in_sec)
+	print '%.2f file stats per second' % (count/in_sec)
 
 	if cleanup:
 		elapsed, result = bench_run( del_files, root, dir_count, file_count )
 		in_sec = total_seconds(elapsed)
-		print '%.2f file removes per second' % ((dir_count*file_count)/in_sec)
+		print '%.2f file removes per second' % (count/in_sec)
 
 		elapsed, result = bench_run( del_dirs, root, dir_count )
 		in_sec = total_seconds(elapsed)
