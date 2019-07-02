@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #
-# Copyright (C) 2013-2014 Deutsches Elektronen-Synchroton,
+# Copyright (C) 2013-2019 Deutsches Elektronen-Synchroton,
 # Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
 #
 # This software may be used and distributed according to the terms of the
@@ -10,7 +10,7 @@
 #
 
 '''
-Simple filsystem metadata operations benchmark
+Simple filesystem metadata operations benchmark
 
 Usage: mdbench [options] <PATH>
 
@@ -110,7 +110,7 @@ def mkfile(fname, size = 0, chunk = 65536, sync = False) :
 	with open(fname, "wb") as f:
 		for n in range(n_chunks) :
 			f.write(bite)
- 
+
 		f.write(payload)
 		if sync:
 			f.flush()
@@ -134,11 +134,11 @@ FILE_COUNT = 10
 FILE_SIZE = 0
 
 def usage():
-	print __doc__
+	print(__doc__)
 	sys.exit(1)
 
 def main():
-	
+
 	dir_count = DIR_COUNT
 	file_count = FILE_COUNT
 	file_size = FILE_SIZE
@@ -149,7 +149,7 @@ def main():
 		options, remainder = getopt.gnu_getopt(sys.argv[1:], 'f:d:s:nh', \
 					 ['files=','dirs=','size=','no-clean','no-container','help'])
 	except getopt.GetoptError as err:
-		print str(err)
+		print(str(err))
 		usage()
 
 	for opt, arg in options:
@@ -178,25 +178,25 @@ def main():
 
 	elapsed, result = bench_run( make_dirs, root, dir_count )
 	in_sec = total_seconds(elapsed)
-	print '%.2f dir creates per second' % (dir_count/in_sec)
+	print('%.2f dir creates per second' % (dir_count/in_sec))
 
 	elapsed, result = bench_run( make_files, root, dir_count, file_count , file_size)
 	in_sec = total_seconds(elapsed)
 	count = (dir_count if dir_count > 0 else 1) * file_count
-	print '%.2f file creates per second' % (count/in_sec)
+	print('%.2f file creates per second' % (count/in_sec))
 
 	elapsed, result = bench_run( stat_files, root, dir_count, file_count )
 	in_sec = total_seconds(elapsed)
-	print '%.2f file stats per second' % (count/in_sec)
+	print('%.2f file stats per second' % (count/in_sec))
 
 	if cleanup:
 		elapsed, result = bench_run( del_files, root, dir_count, file_count )
 		in_sec = total_seconds(elapsed)
-		print '%.2f file removes per second' % (count/in_sec)
+		print('%.2f file removes per second' % (count/in_sec))
 
 		elapsed, result = bench_run( del_dirs, root, dir_count )
 		in_sec = total_seconds(elapsed)
-		print '%.2f dir removes per second' % (dir_count/in_sec)
+		print('%.2f dir removes per second' % (dir_count/in_sec))
 
 		if createContainer:
 			os.rmdir(root)
