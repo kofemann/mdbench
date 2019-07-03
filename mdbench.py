@@ -39,6 +39,7 @@ import socket
 import getopt
 import string
 from datetime import datetime
+import numpy as np
 
 DIR = 'dir.'
 FILE = 'file.'
@@ -53,6 +54,14 @@ G = K*M
 
 DATA_SIZES = {'b':B, 'k': K, 'm': M, 'g': G}
 
+
+dir_creates = []
+file_creates = []
+file_stats = []
+dir_stats = []
+dir_removes = []
+file_removes = []
+
 def get_size(s):
 
 	last_symbol = s[-1:].lower()
@@ -66,7 +75,7 @@ def get_size(s):
 
 def make_dirs(root, count):
 	for i in range(count):
-		os.mkdir( gen_dir(root, i) )
+		mkdir( gen_dir(root, i) )
 
 def make_files(root, dir_count, file_count, size = 0):
 	for j in range(file_count):
@@ -80,26 +89,55 @@ def del_files(root, dir_count, file_count):
 	for j in range(file_count):
 		if dir_count > 0:
 			for i in range(dir_count):
-				os.remove(gen_file( gen_dir(root, i), j ))
+				rmfile(gen_file( gen_dir(root, i), j ))
 		else:
-			os.remove(gen_file(root, j))
+			rmfile(gen_file(root, j))
 
 def del_dirs(root, count):
 	for i in range(count):
-		os.rmdir( gen_dir(root, i) )
+		rmdir( gen_dir(root, i) )
 
 def stat_dirs(root, count):
 	for i in range(count):
-		os.stat( gen_dir(root, i) )
+		statdir( gen_dir(root, i) )
 
 def stat_files(root, dir_count, file_count):
 	for j in range(file_count):
 		if dir_count > 0:
 			for i in range(dir_count):
-				os.stat(gen_file( gen_dir(root, i), j ))
+				statfile(gen_file( gen_dir(root, i), j ))
 		else:
-			os.stat(gen_file(root, j))
+			statfile(gen_file(root, j))
 
+def rmfile(f):
+	start = datetime.now()
+	os.remove(f)
+	end = datetime.now()
+	file_removes.append(total_micros(end - start))
+
+def rmdir(d):
+	start = datetime.now()
+	os.rmdir(d)
+	end = datetime.now()
+	dir_removes.append(total_micros(end - start))
+
+def mkdir(d):
+	start = datetime.now()
+	os.mkdir(d)
+	end = datetime.now()
+	dir_creates.append(total_micros(end - start))
+
+def statfile(f):
+	start = datetime.now()
+	os.stat(f)
+	end = datetime.now()
+	file_stats.append(total_micros(end - start))
+
+def statdir(f):
+	start = datetime.now()
+	os.stat(f)
+	end = datetime.now()
+	dir_stats.append(total_micros(end - start))
 
 def mkfile(fname, size = 0, chunk = 65536, sync = False) :
 	n_chunks = size // chunk
@@ -107,6 +145,7 @@ def mkfile(fname, size = 0, chunk = 65536, sync = False) :
 	bite = bytearray(chunk)
 	payload = bytearray(size % chunk)
 
+	start = datetime.now()
 	with open(fname, "wb") as f:
 		for n in range(n_chunks) :
 			f.write(bite)
@@ -116,18 +155,16 @@ def mkfile(fname, size = 0, chunk = 65536, sync = False) :
 			f.flush()
 			os.fsync(f.fileno())
 
-def total_seconds(td):
-	return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6) / 10**6
-
-def bench_run(func, *args):
-	start = datetime.now()
-
-	result = func(*args)
-
 	end = datetime.now()
-	elapsed = end - start
+	file_creates.append(total_micros(end - start))
 
-	return elapsed, result
+def total_micros(td):
+	return td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6
+
+def report(title, raw):
+	data = np.array(raw)
+	print('{:16}: {:6.2f}μ ±{:=6.2f}μ, {:6.2f} op/s' \
+		.format(title, np.mean(data), np.std(data), len(raw)/np.sum(data)*10**6))
 
 DIR_COUNT = 1000
 FILE_COUNT = 10
@@ -176,28 +213,20 @@ def main():
 	if createContainer:
 		os.mkdir(root)
 
-	elapsed, result = bench_run( make_dirs, root, dir_count )
-	in_sec = total_seconds(elapsed)
-	print('%.2f dir creates per second' % (dir_count/in_sec))
-
-	elapsed, result = bench_run( make_files, root, dir_count, file_count , file_size)
-	in_sec = total_seconds(elapsed)
-	count = (dir_count if dir_count > 0 else 1) * file_count
-	print('%.2f file creates per second' % (count/in_sec))
-
-	elapsed, result = bench_run( stat_files, root, dir_count, file_count )
-	in_sec = total_seconds(elapsed)
-	print('%.2f file stats per second' % (count/in_sec))
+	make_dirs(root, dir_count)
+	report("dir creates", dir_creates)
+	make_files(root, dir_count, file_count , file_size)
+	report("file creates", file_creates)
+	stat_files(root, dir_count, file_count)
+	report("file stats", file_stats)
+	stat_dirs(root, dir_count)
+	report("dir stats", dir_stats)
 
 	if cleanup:
-		elapsed, result = bench_run( del_files, root, dir_count, file_count )
-		in_sec = total_seconds(elapsed)
-		print('%.2f file removes per second' % (count/in_sec))
-
-		elapsed, result = bench_run( del_dirs, root, dir_count )
-		in_sec = total_seconds(elapsed)
-		print('%.2f dir removes per second' % (dir_count/in_sec))
-
+		del_files(root, dir_count, file_count )
+		report("file removes", file_removes)
+		del_dirs(root, dir_count )
+		report("dir removes", dir_removes)
 		if createContainer:
 			os.rmdir(root)
 
