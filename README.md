@@ -20,11 +20,11 @@ The file size can be specified in human friendly format, e.g.: 1K, 256M. 4G.
 ```
 
 ```sh
-$ ./mdbench.py -d 10 /mnt/exports/data/
-46236.36 dir creates per second
-12963.49 files creates per second
-36035.65 files stats per second
-33829.84 files removes per second
-46262.03 dir removes per second
-$ 
+$ mdbench.py -d 1 -f 1000 -s 1 /net/dcache/exports/data
+dir creates     : 6001.00μ ±  0.00μ, 166.64 op/s
+file creates    : 16448.76μ ±3926.05μ,  60.79 op/s
+file stats      : 373.97μ ±163.12μ, 2674.01 op/s
+dir stats       : 395.00μ ±  0.00μ, 2531.65 op/s
+file removes    : 1823.41μ ±1139.57μ, 548.42 op/s
+dir removes     : 3556.00μ ±  0.00μ, 281.21 op/s
 ```
