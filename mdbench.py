@@ -66,12 +66,12 @@ def get_size(s):
 
 	last_symbol = s[-1:].lower()
 	if last_symbol in string.digits:
-		return long(s)
+		return int(s)
 
 	if not DATA_SIZES.has_key(last_symbol):
 		raise Exception('Invalid format: %s' % s)
 
-	return long(s[:-1])*DATA_SIZES[last_symbol]
+	return int(s[:-1])*DATA_SIZES[last_symbol]
 
 def make_dirs(root, count):
 	for i in range(count):
