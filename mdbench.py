@@ -68,7 +68,7 @@ def get_size(s):
 	if last_symbol in string.digits:
 		return int(s)
 
-	if not DATA_SIZES.has_key(last_symbol):
+	if last_symbol not in DATA_SIZES:
 		raise Exception('Invalid format: %s' % s)
 
 	return int(s[:-1])*DATA_SIZES[last_symbol]
