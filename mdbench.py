@@ -78,12 +78,15 @@ def make_dirs(root, count):
 		mkdir( gen_dir(root, i) )
 
 def make_files(root, dir_count, file_count, size = 0):
+
+	data = bytearray(size)
+
 	for j in range(file_count):
 		if dir_count > 0:
 			for i in range(dir_count):
-				mkfile(gen_file( gen_dir(root, i), j ), size, 1024)
+				mkfile(gen_file( gen_dir(root, i), j ), data, 1024)
 		else:
-			mkfile(gen_file(root, j), size, 1024)
+			mkfile(gen_file(root, j), data, 1024)
 
 def del_files(root, dir_count, file_count):
 	for j in range(file_count):
@@ -139,18 +142,20 @@ def statdir(f):
 	end = datetime.now()
 	dir_stats.append(total_micros(end - start))
 
-def mkfile(fname, size = 0, chunk = 65536, sync = False) :
-	n_chunks = size // chunk
+def mkfile(fname, data, chunk = 65536, sync = False) :
 
-	bite = bytearray(chunk)
-	payload = bytearray(size % chunk)
+	off = 0
+	remaining = len(data)
 
 	start = datetime.now()
 	with open(fname, "wb") as f:
-		for n in range(n_chunks) :
-			f.write(bite)
 
-		f.write(payload)
+		while remaining > 0:
+			wsize = min(chunk, remaining)
+			f.write(data[off:off+wsize])
+			off += wsize
+			remaining -= wsize
+
 		if sync:
 			f.flush()
 			os.fsync(f.fileno())
