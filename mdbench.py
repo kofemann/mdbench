@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #
-# Copyright (C) 2013-2019 Deutsches Elektronen-Synchroton,
+# Copyright (C) 2013-2020 Deutsches Elektronen-Synchroton,
 # Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
 #
 # This software may be used and distributed according to the terms of the
@@ -39,7 +39,7 @@ import socket
 import getopt
 import string
 from datetime import datetime
-import numpy as np
+import math
 
 DIR = 'dir.'
 FILE = 'file.'
@@ -55,12 +55,57 @@ G = K*M
 DATA_SIZES = {'b':B, 'k': K, 'm': M, 'g': G}
 
 
-dir_creates = []
-file_creates = []
-file_stats = []
-dir_stats = []
-dir_removes = []
-file_removes = []
+class MovingAvg:
+	"""
+	Calculate moving average.
+	"""
+
+	def __init__(self):
+		self._avg = 0.0
+		self._count = 0
+		self._sigma = 0.0
+		self._total = 0
+
+	def avg(self):
+		"""
+		Return the current value of average.
+		"""
+		return self._avg
+
+	def std(self):
+		"""
+		Returns the the current value of standard deviation.
+		"""
+		return math.sqrt(self._sigma - self._avg**2)
+
+	def update(self, v):
+		"""
+		Update average with new value.
+		"""
+		self._avg = (self._avg * self._count + v) / (self._count + 1)
+		self._sigma = (self._sigma * self._count + v**2) / (self._count + 1)
+		self._count += 1
+		self._total += v
+
+	def sum(self):
+		"""
+		Return the sum of all values.
+		"""
+		return self._total
+
+	def count(self):
+		"""
+		Return the total number up updates.
+		"""
+		return self._count
+
+
+dir_creates = MovingAvg()
+file_creates = MovingAvg()
+file_stats = MovingAvg()
+dir_stats = MovingAvg()
+dir_removes = MovingAvg()
+file_removes = MovingAvg()
 
 def get_size(s):
 
@@ -116,31 +161,31 @@ def rmfile(f):
 	start = datetime.now()
 	os.remove(f)
 	end = datetime.now()
-	file_removes.append(total_micros(end - start))
+	file_removes.update(total_micros(end - start))
 
 def rmdir(d):
 	start = datetime.now()
 	os.rmdir(d)
 	end = datetime.now()
-	dir_removes.append(total_micros(end - start))
+	dir_removes.update(total_micros(end - start))
 
 def mkdir(d):
 	start = datetime.now()
 	os.mkdir(d)
 	end = datetime.now()
-	dir_creates.append(total_micros(end - start))
+	dir_creates.update(total_micros(end - start))
 
 def statfile(f):
 	start = datetime.now()
 	os.stat(f)
 	end = datetime.now()
-	file_stats.append(total_micros(end - start))
+	file_stats.update(total_micros(end - start))
 
 def statdir(f):
 	start = datetime.now()
 	os.stat(f)
 	end = datetime.now()
-	dir_stats.append(total_micros(end - start))
+	dir_stats.update(total_micros(end - start))
 
 def mkfile(fname, data, chunk = 65536, sync = False) :
 
@@ -161,15 +206,14 @@ def mkfile(fname, data, chunk = 65536, sync = False) :
 			os.fsync(f.fileno())
 
 	end = datetime.now()
-	file_creates.append(total_micros(end - start))
+	file_creates.update(total_micros(end - start))
 
 def total_micros(td):
 	return td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6
 
-def report(title, raw):
-	data = np.array(raw)
+def report(title, counter):
 	print('{:16}: {:6.2f}μ ±{:=6.2f}μ, {:6.2f} op/s' \
-		.format(title, np.mean(data), np.std(data), len(raw)/np.sum(data)*10**6))
+		.format(title, counter.avg(), counter.std(), counter.count()/counter.sum()*10**6))
 
 DIR_COUNT = 1000
 FILE_COUNT = 10
