@@ -161,31 +161,31 @@ def rmfile(f):
 	start = datetime.now()
 	os.remove(f)
 	end = datetime.now()
-	file_removes.update(total_micros(end - start))
+	file_removes.update(total_millis(end - start))
 
 def rmdir(d):
 	start = datetime.now()
 	os.rmdir(d)
 	end = datetime.now()
-	dir_removes.update(total_micros(end - start))
+	dir_removes.update(total_millis(end - start))
 
 def mkdir(d):
 	start = datetime.now()
 	os.mkdir(d)
 	end = datetime.now()
-	dir_creates.update(total_micros(end - start))
+	dir_creates.update(total_millis(end - start))
 
 def statfile(f):
 	start = datetime.now()
 	os.stat(f)
 	end = datetime.now()
-	file_stats.update(total_micros(end - start))
+	file_stats.update(total_millis(end - start))
 
 def statdir(f):
 	start = datetime.now()
 	os.stat(f)
 	end = datetime.now()
-	dir_stats.update(total_micros(end - start))
+	dir_stats.update(total_millis(end - start))
 
 def mkfile(fname, data, chunk = 65536, sync = False) :
 
@@ -206,14 +206,17 @@ def mkfile(fname, data, chunk = 65536, sync = False) :
 			os.fsync(f.fileno())
 
 	end = datetime.now()
-	file_creates.update(total_micros(end - start))
+	file_creates.update(total_millis(end - start))
 
 def total_micros(td):
-	return td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6
+	return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6)
+
+def total_millis(td):
+	return total_micros(td)/1000
 
 def report(title, counter):
-	print('{:16}: {:6.2f}μ ±{:=6.2f}μ, {:6.2f} op/s' \
-		.format(title, counter.avg(), counter.std(), counter.count()/counter.sum()*10**6))
+	print('{:16}: {:6.2f}ms ±{:=6.2f}ms, {:6.2f} op/s' \
+		.format(title, counter.avg(), counter.std(), counter.count()/counter.sum()*10**3))
 
 DIR_COUNT = 1000
 FILE_COUNT = 10
