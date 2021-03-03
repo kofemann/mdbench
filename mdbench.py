@@ -104,6 +104,8 @@ dir_creates = MovingAvg()
 file_creates = MovingAvg()
 file_stats = MovingAvg()
 dir_stats = MovingAvg()
+chmod_stats = MovingAvg()
+mv_stats = MovingAvg()
 dir_removes = MovingAvg()
 file_removes = MovingAvg()
 
@@ -157,6 +159,23 @@ def stat_files(root, dir_count, file_count):
 		else:
 			statfile(gen_file(root, j))
 
+def chmod_files(root, dir_count, file_count):
+	for j in range(file_count):
+		if dir_count > 0:
+			for i in range(dir_count):
+				chmodfile(gen_file( gen_dir(root, i), j ))
+		else:
+			chmodfile(gen_file(root, j))
+
+def mv_files(root, dir_count, file_count):
+	for j in range(file_count):
+		if dir_count > 0:
+			for i in range(dir_count):
+				mvfile(gen_file( gen_dir(root, i), j ))
+		else:
+			mvfile(gen_file(root, j))
+
+
 def rmfile(f):
 	start = datetime.now()
 	os.remove(f)
@@ -174,6 +193,19 @@ def mkdir(d):
 	os.mkdir(d)
 	end = datetime.now()
 	dir_creates.update(total_millis(end - start))
+
+def chmodfile(f):
+	start = datetime.now()
+	os.chmod(f, 777)
+	end = datetime.now()
+	chmod_stats.update(total_millis(end - start))
+
+def mvfile(f):
+	start = datetime.now()
+	os.rename(f, "%s_moved" % f)
+	end = datetime.now()
+	os.rename("%s_moved" % f, f)
+	mv_stats.update(total_millis(end - start))
 
 def statfile(f):
 	start = datetime.now()
@@ -233,10 +265,11 @@ def main():
 	file_size = FILE_SIZE
 	cleanup = True
 	createContainer = True
+	extendedChecks = False
 
 	try:
-		options, remainder = getopt.gnu_getopt(sys.argv[1:], 'f:d:s:nh', \
-					 ['files=','dirs=','size=','no-clean','no-container','help'])
+		options, remainder = getopt.gnu_getopt(sys.argv[1:], 'f:d:s:nhe', \
+					 ['files=','dirs=','size=','no-clean','no-container','extended-checks','help'])
 	except getopt.GetoptError as err:
 		print(str(err))
 		usage()
@@ -252,6 +285,8 @@ def main():
 			cleanup = False
 		elif opt in ('--no-container'):
 			createContainer = False
+		elif opt in ('-e', '--extended-checks'):
+			extendedChecks = True
 		elif opt in ('-h', '--help'):
 			usage()
 
@@ -271,6 +306,12 @@ def main():
 	report("file creates", file_creates)
 	stat_files(root, dir_count, file_count)
 	report("file stats", file_stats)
+	if extendedChecks:
+		chmod_files(root, dir_count, file_count)
+		report("chmod stats", chmod_stats)
+		mv_files(root, dir_count, file_count)
+		report("mv stats", mv_stats)
+
 	stat_dirs(root, dir_count)
 	report("dir stats", dir_stats)
 
