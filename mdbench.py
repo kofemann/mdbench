@@ -21,7 +21,7 @@ Usage: mdbench [options] <PATH>
     -n, --no-clean       : do not delete created files and directories
     --no-container       : do not create the 'mdbench.<name>.<pid>' directory
     -e, --extended-checks: runs extended tests as chmod and mv
-    -C, --csv-file       : export csv file with the results
+    -c, --csv-file       : export csv file with the results
     -h, --help           : help message
 
   and PATH points to the directory where tests should run. Current directory
@@ -274,7 +274,7 @@ def main():
 	csvFile = None
 
 	try:
-		options, remainder = getopt.gnu_getopt(sys.argv[1:], 'f:d:s:C:nhe', \
+		options, remainder = getopt.gnu_getopt(sys.argv[1:], 'f:d:s:c:nhe', \
 					 ['files=','dirs=','size=','no-clean','no-container','extended-checks','csv-file=','help'])
 	except getopt.GetoptError as err:
 		print(str(err))
@@ -289,11 +289,11 @@ def main():
 			file_size = get_size(arg)
 		elif opt in ('-n', '--no-clean'):
 			cleanup = False
-		elif opt in ('--no-container'):
+		elif opt == '--no-container':
 			createContainer = False
 		elif opt in ('-e', '--extended-checks'):
 			extendedChecks = True
-		elif opt in ('-C', '--csv-file'):
+		elif opt in ('-c', '--csv-file'):
 			csvFile = arg
 		elif opt in ('-h', '--help'):
 			usage()
