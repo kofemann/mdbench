@@ -309,7 +309,8 @@ def main():
 		os.mkdir(root)
 	if csvFile:
 		# Create empty file
-		open(csvFile, 'w').close()
+		with open(csvFile, 'w') as f:
+			f.write("title,average,std,IOPS\n")
 
 	make_dirs(root, dir_count)
 	report("dir creates", dir_creates, csvFile)
