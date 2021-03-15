@@ -21,6 +21,7 @@ Usage: mdbench [options] <PATH>
     -n, --no-clean       : do not delete created files and directories
     --no-container       : do not create the 'mdbench.<name>.<pid>' directory
     -e, --extended-checks: runs extended tests as chmod and mv
+    -C, --csv-file       : export csv file with the results
     -h, --help           : help message
 
   and PATH points to the directory where tests should run. Current directory
@@ -247,10 +248,13 @@ def total_micros(td):
 def total_millis(td):
 	return total_micros(td)/1000
 
-def report(title, counter):
+def report(title, counter, csvFile = None):
 	print('{:16}: {:6.2f}ms ±{:=6.2f}ms, {:6.2f} op/s' \
 		.format(title, counter.avg(), counter.std(), counter.count()/counter.sum()*10**3))
-
+	if csvFile is not None:
+		with open(csvFile, "a") as f:
+			txt = '%s,%.2f,%.2f,%.2f\n' % (title, counter.avg(), counter.std(), counter.count()/counter.sum()*10**3)
+			f.write(txt)
 DIR_COUNT = 1000
 FILE_COUNT = 10
 FILE_SIZE = 0
@@ -267,10 +271,11 @@ def main():
 	cleanup = True
 	createContainer = True
 	extendedChecks = False
+	csvFile = None
 
 	try:
-		options, remainder = getopt.gnu_getopt(sys.argv[1:], 'f:d:s:nhe', \
-					 ['files=','dirs=','size=','no-clean','no-container','extended-checks','help'])
+		options, remainder = getopt.gnu_getopt(sys.argv[1:], 'f:d:s:C:nhe', \
+					 ['files=','dirs=','size=','no-clean','no-container','extended-checks','csv-file=','help'])
 	except getopt.GetoptError as err:
 		print(str(err))
 		usage()
@@ -288,6 +293,8 @@ def main():
 			createContainer = False
 		elif opt in ('-e', '--extended-checks'):
 			extendedChecks = True
+		elif opt in ('-C', '--csv-file'):
+			csvFile = arg
 		elif opt in ('-h', '--help'):
 			usage()
 
@@ -300,27 +307,30 @@ def main():
 
 	if createContainer:
 		os.mkdir(root)
+	if csvFile:
+		# Create empty file
+		open(csvFile, 'w').close()
 
 	make_dirs(root, dir_count)
-	report("dir creates", dir_creates)
+	report("dir creates", dir_creates, csvFile)
 	make_files(root, dir_count, file_count , file_size)
-	report("file creates", file_creates)
+	report("file creates", file_creates, csvFile)
 	stat_files(root, dir_count, file_count)
-	report("file stats", file_stats)
+	report("file stats", file_stats, csvFile)
 	if extendedChecks:
 		chmod_files(root, dir_count, file_count)
-		report("chmod stats", chmod_stats)
+		report("chmod stats", chmod_stats, csvFile)
 		mv_files(root, dir_count, file_count)
-		report("mv stats", mv_stats)
+		report("mv stats", mv_stats, csvFile)
 
 	stat_dirs(root, dir_count)
-	report("dir stats", dir_stats)
+	report("dir stats", dir_stats, csvFile)
 
 	if cleanup:
 		del_files(root, dir_count, file_count )
-		report("file removes", file_removes)
+		report("file removes", file_removes, csvFile)
 		del_dirs(root, dir_count )
-		report("dir removes", dir_removes)
+		report("dir removes", dir_removes, csvFile)
 		if createContainer:
 			os.rmdir(root)
 
