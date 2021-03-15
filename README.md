@@ -32,7 +32,7 @@ dir removes     : 3556.00μ ±  0.00μ, 281.21 op/s
 License
 -------
 
-Public Domain
+GNU General Public License version 2 or any later.
 
 How to contribute
 -----------------
