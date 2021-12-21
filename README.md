@@ -29,6 +29,13 @@ file removes    : 1823.41μ ±1139.57μ, 548.42 op/s
 dir removes     : 3556.00μ ±  0.00μ, 281.21 op/s
 ```
 
+Alternatives
+------------
+
+- [fio](https://github.com/axboe/fio) A Powerful Flexible I/O Tester.
+- [smallfile](https://github.com/distributed-system-analysis/smallfile) A distributed workload generator for POSIX-like filesystems.
+- [ior](https://github.com/hpc/ior) IOR and mdtest parallel I/O benchmark.
+
 License
 -------
 
