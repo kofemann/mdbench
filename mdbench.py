@@ -312,6 +312,11 @@ def main():
 		with open(csvFile, 'w') as f:
 			f.write("title,average,std,IOPS\n")
 
+
+	t0 = datetime.now()
+	print('{:16}: {}'.format( "Starting at: ", t0))
+	print()
+
 	make_dirs(root, dir_count)
 	report("dir creates", dir_creates, csvFile)
 	make_files(root, dir_count, file_count , file_size)
@@ -334,6 +339,11 @@ def main():
 		report("dir removes", dir_removes, csvFile)
 		if createContainer:
 			os.rmdir(root)
+
+	t1 = datetime.now()
+	td = t1 - t0
+	print()
+	print('{:16}: {}, runtime: {}'.format( "Finished at: ", t1, td))
 
 if __name__ == '__main__':
 	main()
