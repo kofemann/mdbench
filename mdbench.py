@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #
-# Copyright (C) 2013-2020 Deutsches Elektronen-Synchroton,
+# Copyright (C) 2013-2022 Deutsches Elektronen-Synchroton,
 # Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
 #
 # This software may be used and distributed according to the terms of the
@@ -22,6 +22,7 @@ Usage: mdbench [options] <PATH>
     --no-container       : do not create the 'mdbench.<name>.<pid>' directory
     -e, --extended-checks: runs extended tests as chmod and mv
     -c, --csv-file       : export csv file with the results
+    -r, --random-data    : fill files with random data
     -h, --help           : help message
 
   and PATH points to the directory where tests should run. Current directory
@@ -42,6 +43,7 @@ import getopt
 import string
 from datetime import datetime
 import math
+import random
 
 DIR = 'dir.'
 FILE = 'file.'
@@ -126,16 +128,14 @@ def make_dirs(root, count):
 	for i in range(count):
 		mkdir( gen_dir(root, i) )
 
-def make_files(root, dir_count, file_count, size = 0):
-
-	data = bytearray(size)
+def make_files(root, dir_count, file_count, size = 0, random_data = False):
 
 	for j in range(file_count):
 		if dir_count > 0:
 			for i in range(dir_count):
-				mkfile(gen_file( gen_dir(root, i), j ), data, 1024)
+				mkfile(gen_file( gen_dir(root, i), j ), size, 1024, random_data = random_data)
 		else:
-			mkfile(gen_file(root, j), data, 1024)
+			mkfile(gen_file(root, j), size, 1024, random_data = random_data)
 
 def del_files(root, dir_count, file_count):
 	for j in range(file_count):
@@ -221,17 +221,18 @@ def statdir(f):
 	end = datetime.now()
 	dir_stats.update(total_millis(end - start))
 
-def mkfile(fname, data, chunk = 65536, sync = False) :
+def mkfile(fname, size, chunk = 65536, sync = False, random_data = False) :
 
 	off = 0
-	remaining = len(data)
+	remaining = size
 
 	start = datetime.now()
 	with open(fname, "wb") as f:
 
 		while remaining > 0:
 			wsize = min(chunk, remaining)
-			f.write(data[off:off+wsize])
+			data = random.randbytes(wsize) if random_data else bytearray(wsize)
+			f.write(data)
 			off += wsize
 			remaining -= wsize
 
@@ -272,10 +273,11 @@ def main():
 	createContainer = True
 	extendedChecks = False
 	csvFile = None
+	random_data = False
 
 	try:
-		options, remainder = getopt.gnu_getopt(sys.argv[1:], 'f:d:s:c:nhe', \
-					 ['files=','dirs=','size=','no-clean','no-container','extended-checks','csv-file=','help'])
+		options, remainder = getopt.gnu_getopt(sys.argv[1:], 'f:d:s:c:nher', \
+					 ['files=','dirs=','size=','no-clean','no-container','extended-checks','csv-file=', "random-date",'help'])
 	except getopt.GetoptError as err:
 		print(str(err))
 		usage()
@@ -295,6 +297,8 @@ def main():
 			extendedChecks = True
 		elif opt in ('-c', '--csv-file'):
 			csvFile = arg
+		elif opt in ('-r', '--random-data'):
+			random_data = True
 		elif opt in ('-h', '--help'):
 			usage()
 
@@ -319,7 +323,7 @@ def main():
 
 	make_dirs(root, dir_count)
 	report("dir creates", dir_creates, csvFile)
-	make_files(root, dir_count, file_count , file_size)
+	make_files(root, dir_count, file_count , file_size, random_data)
 	report("file creates", file_creates, csvFile)
 	stat_files(root, dir_count, file_count)
 	report("file stats", file_stats, csvFile)
