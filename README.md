@@ -4,14 +4,18 @@ mdbench
 Simple filsystem metadata operations benchmark
 ----------------------------------------------
 ```
-Usage: mdbench [options] [PATH]
-
+Usage: mdbench [options] <PATH>
   where options are:
-    -f, --files <N>  : number of generated files per directory
-    -d, --dirs  <N>  : number of generated directories to generate
-    -s, --size  <N>  : size of generated files in B/K/M/G
-    -n, --no-clean   : do not delete created files and directories
-    -h, --help       : help message
+    -f, --files <N>      : number of generated files per directory
+    -d, --dirs  <N>      : number of generated directories to generate
+    -s, --size  <N>      : size of generated files in B/K/M/G
+    -n, --no-clean       : do not delete created files and directories
+    --no-container       : do not create the 'mdbench.<name>.<pid>' directory
+    -e, --extended-checks: runs extended tests as chmod and mv
+    -c, --csv-file       : export csv file with the results
+    -r, --random-data    : fill files with random data
+    -h, --help           : help message
+
 
   and PATH points to a directory where the test should run. Currect directory is
   used of not specified.
